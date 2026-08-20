@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Gate + Room System</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="static/css/style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<h1>🚪 Smart Gate + Room System</h1>
+
+<div style="text-align:center;">
+    <button onclick="faceScan()">📷 Face Entry</button>
+    <button onclick="qrScan()">🔑 QR Entry</button>
+</div>
+
+<div class="container">
+
+    <!-- 🔐 Gate Section -->
+    <div class="card">
+        <h2>🔐 Gate Security</h2>
+
+        <p>👤 User: <span id="user">-</span></p>
+        <p>🚪 Status: <span id="status">-</span></p>
+        <p id="alert" class="alert">-</p>
+
+        <h3>📜 Logs</h3>
+        <ul id="logs"></ul>
+    </div>
+
+    <!-- 🏠 Room Section -->
+    <div class="card">
+        <h2>🏠 Room Automation</h2>
+
+        <p>🌡 Temp: <span id="temp">-</span></p>
+        <p>🚶 Motion: <span id="motion">-</span></p>
+        <p>💡 Light: <span id="light">-</span></p>
+        <p>🌀 Fan: <span id="fan">-</span></p>
+        <p>⚡ Energy: <span id="energy">-</span></p>
+    </div>
+
+</div>
+
+<br>
+
+<!-- 📊 Chart -->
+<canvas id="chart" height="100"></canvas>
+
+<!-- JS -->
+<script src="/static/script.js"></script>
+
+</body>
+</html>

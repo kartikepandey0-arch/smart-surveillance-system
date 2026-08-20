@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart AI Building</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #020617;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 20px;
+        }
+
+        .status {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 10px;
+            width: 150px;
+        }
+
+        .alert {
+            color: red;
+        }
+
+        /* CCTV */
+        .cctv {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 10px;
+            width: 70%;
+            margin: auto;
+        }
+
+        .cctv img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        /* MAP + HEATMAP */
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .map {
+            position: relative;
+            width: 800px;
+            height: 500px;
+        }
+
+        .map img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: red;
+            border-radius: 50%;
+            border: 2px solid white;
+            transform: translate(-50%, -50%);
+        }
+
+        .label {
+            position: absolute;
+            top: -20px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .zone {
+            position: absolute;
+            left: 250px;
+            top: 150px;
+            width: 200px;
+            height: 150px;
+            border: 2px dashed red;
+        }
+
+        canvas {
+            border-radius: 10px;
+            background: #111;
+        }
+
+        .chart {
+            width: 60%;
+            margin: 30px auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>⚡ SMART AI BUILDING</h1>
+
+<!-- STATUS -->
+<div class="status">
+    <div class="card">⚡ <span id="e"></span></div>
+    <div class="card">🌡 <span id="t"></span></div>
+    <div class="card">👥 <span id="o"></span></div>
+    <div class="card alert">🚨 <span id="a"></span></div>
+</div>
+
+<!-- CCTV -->
+<h2>📡 CCTV</h2>
+<div class="cctv">
+    <img src="/video_feed">
+    <img src="/video_feed">
+    <img src="/video_feed">
+    <img src="/video_feed">
+</div>
+
+<!-- MAP + HEATMAP -->
+<div class="container">
+
+    <!-- MAP -->
+    <div>
+        <h2>📍 Live Map</h2>
+        <div class="map">
+            <img src="/static/floor.png">
+
+            <div class="zone"></div>
+            <div id="dots"></div>
+        </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div>
+        <h2>🔥 Heatmap</h2>
+        <canvas id="heatmapCanvas"></canvas>
+    </div>
+
+</div>
+
+<!-- CHART -->
+<h2>📊 Energy Graph</h2>
+<div class="chart">
+    <canvas id="chart"></canvas>
+</div>
+
+<script>
+let chart = new Chart(document.getElementById("chart"), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Energy",
+            data: []
+        }]
+    }
+});
+
+setInterval(()=>{
+fetch('/data')
+.then(r=>r.json())
+.then(d=>{
+
+    // STATUS
+    e.innerText = d.energy
+    t.innerText = d.temp
+    o.innerText = d.occupancy
+    a.innerText = d.alerts
+
+    // ALERT COLOR
+    if(d.alerts.includes("🚨")){
+        document.querySelector('.alert').style.background = "#7f1d1d";
+    }
+
+    // CHART
+    chart.data.labels.push("");
+    chart.data.datasets[0].data.push(d.energy);
+
+    if(chart.data.labels.length > 10){
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+    }
+    chart.update();
+
+    // 📍 MAP DOTS
+    let dotsDiv = document.getElementById("dots");
+    dotsDiv.innerHTML = "";
+
+    let mapWidth = 800;
+    let mapHeight = 500;
+
+    d.positions.forEach((p,i)=>{
+        let dot = document.createElement("div");
+        dot.className="dot";
+
+        dot.style.left = (p[0] * mapWidth) + "px";
+        dot.style.top  = (p[1] * mapHeight) + "px";
+
+        dot.innerHTML = "<span class='label'>P"+(i+1)+"</span>";
+
+        dotsDiv.appendChild(dot);
+    });
+
+    // 🔥 HEATMAP
+    let canvas = document.getElementById("heatmapCanvas");
+    let ctx = canvas.getContext("2d");
+
+    let width = 800;
+    let height = 500;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    let imgData = ctx.createImageData(width, height);
+
+    for(let i=0;i<d.heatmap.length;i++){
+        for(let j=0;j<d.heatmap[i].length;j++){
+
+            let val = d.heatmap[i][j];
+            let index = (i*width + j)*4;
+
+            let r = Math.min(255, val * 40);
+            let g = Math.min(255, val * 10);
+            let b = Math.max(0, 255 - val * 30);
+
+            imgData.data[index]   = r;
+            imgData.data[index+1] = g;
+            imgData.data[index+2] = b;
+            imgData.data[index+3] = 180;
+        }
+    }
+
+    ctx.putImageData(imgData,0,0);
+
+});
+},2000);
+</script>
+
+</body>
+</html>
