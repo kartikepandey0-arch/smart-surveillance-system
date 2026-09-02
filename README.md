@@ -32,16 +32,26 @@ The project uses a camera feed to detect and track objects in real time while al
 ## Project Structure
 
 smart-surveillance-system/
-│
+
+
 ├── known_faces/        # Registered face images
+
 ├── static/             # CSS, JavaScript and other static files
+
 ├── templates/          # HTML templates
+
 ├── app.py              # Main application
+
 ├── routes.py           # Application routes
+
 ├── yolo_tracker.py     # YOLO-based object detection and tracking
+
 ├── yolov8n.pt          # YOLOv8 model
+
 ├── encodings.pkl       # Stored face encodings
+
 ├── requirements.txt    # Python dependencies
+
 └── README.md           # Project documentation
 
 ## How It Works
